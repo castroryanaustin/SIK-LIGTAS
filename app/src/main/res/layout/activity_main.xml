@@ -7,6 +7,11 @@
     android:orientation="vertical"
     tools:context=".MainActivity">
 
+    <ListView
+        android:id="@+id/ListView"
+        android:layout_width="match_parent"
+        android:layout_height="660dp" />
+
     <Button
         android:id="@+id/Button1"
         android:layout_width="match_parent"
@@ -15,10 +20,5 @@
         android:background="#0F9D58"
         android:text="Add Emergency Contact "
         android:textColor="#FFFFFF" />
-
-    <ListView
-        android:id="@+id/ListView"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
 
 </LinearLayout>
