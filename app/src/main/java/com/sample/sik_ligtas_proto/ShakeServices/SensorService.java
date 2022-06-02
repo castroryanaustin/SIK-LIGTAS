@@ -136,7 +136,7 @@ public class SensorService extends Service {
                         @Override
                         public void onFailure(@NonNull Exception e) {
                             Log.d("Check: ", "OnFailure");
-                            String message = "I am in DANGER, i need help. Please urgently reach me out.\n" + "GPS was turned off.Couldn't find location. Call your nearest Police Station.";
+                            String message = "I am in DANGER, I need help. Please urgently reach me out.\n" + "GPS was turned off. Couldn't find location. Call your nearest Police Station.";
                             SmsManager smsManager = SmsManager.getDefault();
                             DbHelper db = new DbHelper(SensorService.this);
                             List<ContactModel> list = db.getAllContacts();
@@ -188,8 +188,8 @@ public class SensorService extends Service {
 
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID);
         Notification notification = notificationBuilder.setOngoing(true)
-                .setContentTitle("You are protected.")
-                .setContentText("We are there for you")
+                .setContentTitle("We detected an unexpected collision")
+                .setContentText("Do you need medical assistance?")
 
                 // this is important, otherwise the notification will show the way
                 // you want i.e. it will show some default notification

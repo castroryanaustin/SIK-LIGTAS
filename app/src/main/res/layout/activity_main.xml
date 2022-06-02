@@ -2,23 +2,30 @@
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    android:background="@drawable/splash_bg"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     tools:context=".MainActivity">
 
     <ListView
+
         android:id="@+id/ListView"
         android:layout_width="match_parent"
         android:layout_height="660dp" />
 
     <Button
         android:id="@+id/Button1"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="12dp"
-        android:background="#0F9D58"
+        android:layout_gravity="center_horizontal"
+
+        android:background="#F2CC61"
+        android:gravity="center"
+        android:paddingHorizontal="60dp"
+        android:paddingTop="20dp"
+        android:paddingBottom="20dp"
         android:text="Add Emergency Contact "
-        android:textColor="#FFFFFF" />
+        android:textColor="@color/black" />
 
 </LinearLayout>
