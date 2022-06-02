@@ -22,17 +22,20 @@
                 style="@style/TextAppearance.AppCompat.Medium"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:textSize="24sp"
+                android:fontFamily="@font/montserrat_bold"
                 android:text="Name"
-                android:textColor="@color/design_default_color_secondary" />
+                android:textColor="@color/white" />
 
             <TextView
                 android:id="@+id/tvPhone"
                 style="@style/TextAppearance.AppCompat.Large"
+                android:textSize="16sp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:fontFamily="@font/montserrat"
                 android:text="Phone"
-                android:textColor="@color/design_default_color_secondary_variant"
-                android:textStyle="bold" />
+                android:textColor="@color/white"/>
 
         </LinearLayout>
 

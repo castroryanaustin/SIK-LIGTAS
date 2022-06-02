@@ -43,7 +43,6 @@ public class SplashScreenActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        startActivity(new Intent(this,sign_in_email.class));
         init();
     }
 
@@ -64,7 +63,7 @@ public class SplashScreenActivity extends AppCompatActivity {
 
     private void showLoginLayout() {
         AuthMethodPickerLayout authMethodPickerLayout = new AuthMethodPickerLayout
-                .Builder(R.layout.layout_sign_in)
+                .Builder(R.layout.activity_splash_screen)
                 .setPhoneButtonId(R.id.sign_in_btn)
                 .setGoogleButtonId(R.id.sign_in_w_google_btn)
                 .build();
@@ -89,7 +88,7 @@ public class SplashScreenActivity extends AppCompatActivity {
             IdpResponse response = IdpResponse.fromResultIntent(data);
             if(resultCode == RESULT_OK){
                 FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-                startActivity(new Intent(SplashScreenActivity.this,MainActivity.class));
+                startActivity(new Intent(SplashScreenActivity.this,MapsActivity.class));
 
             }
             else{
