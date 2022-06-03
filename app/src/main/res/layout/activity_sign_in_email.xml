@@ -77,8 +77,7 @@
             android:background="#F2CC61"
             android:gravity="center"
             android:paddingHorizontal="60dp"
-            android:paddingTop="20dp"
-            android:paddingBottom="20dp"
+
             android:text="Login"
             android:textAlignment="center"
             android:textColor="@color/black"
@@ -95,8 +94,6 @@
             android:background="#F2CC61"
             android:gravity="center"
             android:paddingHorizontal="60dp"
-            android:paddingTop="20dp"
-            android:paddingBottom="20dp"
             android:text="Sign Up"
             android:textAlignment="center"
             android:textColor="@color/black"

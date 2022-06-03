@@ -1,67 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:background="@drawable/splash_bg"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:padding="16dp"
-    >
+    android:layout_height="match_parent">
 
-    <TextView
-        android:id="@+id/textView7"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentBottom="true"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="14dp"
-        android:layout_marginEnd="16dp"
-        android:fontFamily="@font/montserrat_bold"
-        android:gravity="center"
-        android:text="SIK-LIGTAS"
-        android:textColor="@color/white"
-        android:textSize="48sp" />
-
-    <LinearLayout
-        android:id="@+id/homeBtn"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+    <ProgressBar
+        android:id="@+id/progress_bar"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="16dp"
-        android:gravity="center_horizontal"
-        android:orientation="vertical"
-        android:padding="16dp">
+        android:layout_marginBottom="150dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
 
-        <Button
-            android:id="@+id/sign_in_btn"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="10dp"
-            android:background="#F2CC61"
-            android:drawableStart="@drawable/ic_baseline_phone_24"
-            android:fontFamily="@font/montserrat"
-            android:padding="16dp"
-            android:text="Sign In with Phone"
-            android:textColor="@color/black" />
-
-        <Button
-            android:id="@+id/sign_in_w_google_btn"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="10dp"
-            android:background="#F2CC61"
-            android:drawableStart="@drawable/ic_baseline_email_24"
-            android:fontFamily="@font/montserrat"
-            android:padding="16dp"
-            android:text="Sign In with Email"
-            android:textColor="@color/black" />
-
-    </LinearLayout>
 
 </RelativeLayout>

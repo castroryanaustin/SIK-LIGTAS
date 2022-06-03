@@ -12,6 +12,7 @@
         <!-- Status bar color. -->
         <item name="android:statusBarColor" tools:targetApi="l">?attr/colorPrimaryVariant</item>
         <item name="background">@drawable/splash_bg</item>
+        <item name="android:windowBackground">@drawable/splash_bg</item>
         <!-- Customize your theme here. -->
     </style>
 
@@ -39,6 +40,7 @@
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
         <item name="android:windowBackground">@drawable/splash_bg</item>
+        <item name="background">@drawable/splash_bg</item>
         <item name="android:windowFullscreen">true</item>
     </style>
 </resources>

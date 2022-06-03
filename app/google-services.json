@@ -7,6 +7,35 @@
   "client": [
     {
       "client_info": {
+        "mobilesdk_app_id": "1:784107120747:android:b1108a59025c9cb0f8692e",
+        "android_client_info": {
+          "package_name": "com.example.sik_ligtas"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "784107120747-1b3tdplqeake1hqa2atbnog7kjq0n0qr.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCnnL5HIVLi7IVGbVs1O_GU5Oo9GGCiZp0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "784107120747-1b3tdplqeake1hqa2atbnog7kjq0n0qr.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
         "mobilesdk_app_id": "1:784107120747:android:4b84159b7f5cc167f8692e",
         "android_client_info": {
           "package_name": "com.example.sik_ligtas_pronto"
