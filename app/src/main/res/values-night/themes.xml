@@ -5,7 +5,7 @@
         <item name="fontFamily">@font/montserrat</item>
         <item name="colorPrimary">#F2CC61</item>
         <item name="colorPrimaryVariant">@color/black</item>
-        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorOnPrimary">#028EE6</item>
         <!-- Secondary brand color. -->
         <item name="colorSecondary">#F2CC61</item>
         <item name="colorSecondaryVariant">#F2CC61</item>
