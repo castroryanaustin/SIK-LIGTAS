@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout
+    android:id="@+id/linear"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:background="@drawable/splash_bg"
@@ -15,24 +16,21 @@
         android:layout_above="@+id/Button1"
         android:layout_below="@+id/textView8"
         android:layout_alignParentStart="true"
-        android:layout_alignParentEnd="true"
-        android:layout_marginTop="17dp" />
+        android:layout_alignParentEnd="true" />
 
     <Button
         android:id="@+id/Button1"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
-        android:layout_alignParentRight="true"
         android:layout_alignParentBottom="true"
         android:layout_gravity="center"
         android:layout_marginStart="16dp"
         android:layout_marginTop="16dp"
         android:layout_marginEnd="16dp"
-        android:layout_marginRight="16dp"
         android:layout_marginBottom="16dp"
         android:background="#F2CC61"
-        android:text="Add Emergency Contact"
+        android:text="@string/add_emergency_contact"
         android:textColor="@color/black" />
 
     <TextView
@@ -45,7 +43,7 @@
         android:layout_margin="16dp"
         android:gravity="center"
         android:fontFamily="@font/montserrat_bold"
-        android:text="Emergency Contacts"
+        android:text="@string/emergency_contacts"
         android:textColor="@color/white"
         android:textSize="32sp" />
 

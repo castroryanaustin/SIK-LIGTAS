@@ -4,9 +4,14 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.PowerManager;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -52,6 +57,11 @@ public class SplashScreenActivity extends AppCompatActivity {
     DatabaseReference driverInfoRef;
 
     @Override
+    public void onBackPressed() {
+        finish();
+    }
+
+    @Override
     protected void onStart() {
         super.onStart();
         delaySplashScreen();
@@ -79,7 +89,7 @@ public class SplashScreenActivity extends AppCompatActivity {
         driverInfoRef = database.getReference(Common.DRIVER_INFO_REFERENCE);
         providers = Arrays.asList(
                 new AuthUI.IdpConfig.PhoneBuilder().build(),
-                new AuthUI.IdpConfig.GoogleBuilder().build());
+                new AuthUI.IdpConfig.EmailBuilder().build());
 
         firebaseAuth = FirebaseAuth.getInstance();
         listener = myFirebaseAuth -> {
@@ -88,11 +98,7 @@ public class SplashScreenActivity extends AppCompatActivity {
                 checkUserFromFirebase();
             }
             else{
-                //showLoginLayout();
-                Button emailBtn = findViewById(R.id.sign_in_w_google_btn);
-                emailBtn.setOnClickListener(e->{
-                    startActivity(new Intent(this,sign_in_email.class));
-                });
+                showLoginLayout();
             }
         };
     }
@@ -103,10 +109,11 @@ public class SplashScreenActivity extends AppCompatActivity {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
                         if(snapshot.exists()){
-                            Toast.makeText(SplashScreenActivity.this, "User already registered", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(SplashScreenActivity.this, "Welcome Back!", Toast.LENGTH_SHORT).show();
+                            startActivity(new Intent(SplashScreenActivity.this,MapsActivity.class));
                         }
                         else {
-                            showRegisterLayout();
+                            showLoginLayout();
                         }
                     }
 
@@ -117,65 +124,12 @@ public class SplashScreenActivity extends AppCompatActivity {
                 });
     }
 
-    private void showRegisterLayout() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.DialogTheme);
-        View itemView = LayoutInflater.from(this).inflate(R.layout.layout_register,null);
-
-        TextInputEditText first_name = (TextInputEditText)itemView.findViewById(R.id.reg_first_name);
-        TextInputEditText last_name = (TextInputEditText)itemView.findViewById(R.id.reg_last_name);
-        TextInputEditText phone_number = (TextInputEditText)itemView.findViewById(R.id.reg_phone_number);
-
-        Button btn_register = (Button)itemView.findViewById(R.id.btn_register);
-        if(FirebaseAuth.getInstance().getCurrentUser().getPhoneNumber() != null &&
-                TextUtils.isEmpty(FirebaseAuth.getInstance().getCurrentUser().getPhoneNumber()))
-        phone_number.setText(FirebaseAuth.getInstance().getCurrentUser().getPhoneNumber());
-
-        builder.setView(itemView);
-        AlertDialog dialog = builder.create();
-        dialog.show();
-
-        btn_register.setOnClickListener(view -> {
-            if(TextUtils.isEmpty(first_name.getText().toString())){
-                Toast.makeText(this, "Please enter your First Name", Toast.LENGTH_SHORT).show();
-                return;
-            }
-            else if(TextUtils.isEmpty(last_name.getText().toString())){
-                Toast.makeText(this, "Please enter your Last Name", Toast.LENGTH_SHORT).show();
-                return;
-            }
-            else if(TextUtils.isEmpty(phone_number.getText().toString())){
-                Toast.makeText(this, "Please enter your Phone Number", Toast.LENGTH_SHORT).show();
-                dialog.dismiss();
-                return;
-            }
-            else {
-                DriverInfoModel model = new DriverInfoModel();
-                model.setFirstName(first_name.getText().toString());
-                model.setLastName(last_name.getText().toString());
-                model.setPhoneNumber(phone_number.getText().toString());
-                model.setRating(0.0);
-
-                driverInfoRef.child(FirebaseAuth.getInstance().getCurrentUser().getUid())
-                        .setValue(model)
-                        .addOnFailureListener(e ->
-                                {
-                                    dialog.dismiss();
-                                    Toast.makeText(SplashScreenActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
-                                }
-                        )
-                        .addOnSuccessListener(aVoid -> {
-                            Toast.makeText(this, "Registered Successfully!", Toast.LENGTH_SHORT).show();
-                            dialog.dismiss();
-                        });
-            }
-        });
-    }
 
     private void showLoginLayout() {
         AuthMethodPickerLayout authMethodPickerLayout = new AuthMethodPickerLayout
                 .Builder(R.layout.layout_sign_in)
                 .setPhoneButtonId(R.id.sign_in_btn)
-                //.setGoogleButtonId(R.id.sign_in_w_google_btn)
+                .setEmailButtonId(R.id.sign_in_w_google_btn)
                 .build();
         startActivityForResult(AuthUI.getInstance()
                 .createSignInIntentBuilder()
@@ -184,6 +138,7 @@ public class SplashScreenActivity extends AppCompatActivity {
                 .setTheme(R.style.LoginTheme)
                 .setAvailableProviders(providers)
                 .build(),LOGIN_REQUEST_CODE);
+        finish();
     }
 
     private void delaySplashScreen() {

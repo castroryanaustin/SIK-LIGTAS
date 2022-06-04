@@ -24,9 +24,6 @@ This permission is necessary for devices
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.SIKLIGTAS_proto">
-        <activity
-            android:name=".sign_in_email"
-            android:exported="true" />
         <!--
              TODO: Before you run your application, you need a Google Maps API key.
 

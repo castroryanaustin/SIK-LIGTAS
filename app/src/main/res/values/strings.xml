@@ -6,4 +6,6 @@
     <string name="last_name">Last Name</string>
     <string name="phone_number">Phone Number</string>
     <string name="signup_text">Sign Up</string>
+    <string name="add_emergency_contact">Add Emergency Contact</string>
+    <string name="emergency_contacts">Emergency Contacts</string>
 </resources>

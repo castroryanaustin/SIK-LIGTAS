@@ -2,36 +2,41 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context=".sign_in_email"
     android:background="@drawable/splash_bg"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
 
-    <LinearLayout
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        tools:layout_editor_absoluteX="-16dp"
+        tools:layout_editor_absoluteY="366dp">
 
         <TextView
             android:id="@+id/textView2"
-            android:layout_marginTop="24sp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="24sp"
             android:fontFamily="@font/montserrat_bold"
             android:gravity="center"
             android:text="SIK-LIGTAS"
             android:textColor="#FFFFFF"
             android:textSize="48sp" />
 
+
         <TextView
             android:id="@+id/textView"
-            android:layout_marginLeft="16dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="32dp"
+            android:layout_below="@+id/textView2"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentEnd="true"
+            android:layout_marginLeft="16dp"
+            android:layout_marginTop="10dp"
             android:fontFamily="@font/montserrat"
-            android:text="Sign In with Email"
+            android:text="Sign Up"
             android:textColor="@color/white"
             android:textSize="24dp" />
 
@@ -39,12 +44,13 @@
             android:id="@+id/editTextTextPersonName"
             android:layout_width="match_parent"
             android:layout_height="44dp"
+            android:layout_below="@+id/textView"
             android:layout_marginStart="16dp"
             android:layout_marginTop="10dp"
             android:layout_marginEnd="16dp"
             android:background="@color/white"
             android:ems="10"
-            android:hint="Email"
+            android:hint="First Name"
             android:inputType="textEmailAddress"
             android:paddingLeft="10dp"
             android:textColor="#03A9F4"
@@ -52,52 +58,55 @@
             android:textSize="24sp" />
 
         <EditText
-            android:id="@+id/editTextTextPassword"
+            android:id="@+id/reg_lname"
             android:layout_width="match_parent"
             android:layout_height="44dp"
+            android:layout_below="@+id/editTextTextPersonName"
             android:layout_marginStart="16dp"
             android:layout_marginTop="10dp"
             android:layout_marginEnd="16dp"
             android:background="@color/white"
             android:ems="10"
-            android:hint="Password"
-            android:inputType="textPassword"
+            android:hint="Last Name"
             android:paddingLeft="10dp"
             android:textColor="#03A9F4"
             android:textSize="24sp" />
 
-        <Button
-            android:id="@+id/button2"
+        <EditText
+            android:id="@+id/reg_phone"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
+            android:layout_height="44dp"
+            android:layout_below="@+id/reg_lname"
             android:layout_marginStart="16dp"
-            android:layout_marginTop="24dp"
+            android:layout_marginTop="10dp"
             android:layout_marginEnd="16dp"
-            android:background="#F2CC61"
-            android:gravity="center"
-            android:paddingHorizontal="60dp"
-
-            android:text="Login"
-            android:textAlignment="center"
-            android:textColor="@color/black"
-            android:textSize="16sp" />
+            android:background="@color/white"
+            android:ems="10"
+            android:hint="Phone Number"
+            android:paddingLeft="10dp"
+            android:textColor="#03A9F4"
+            android:textColorHighlight="#606060"
+            android:textSize="24sp" />
 
         <Button
             android:id="@+id/button3"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
             android:layout_gravity="center_horizontal"
+            android:layout_marginStart="16dp"
             android:layout_marginTop="10dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="16dp"
             android:background="#F2CC61"
             android:gravity="center"
             android:paddingHorizontal="60dp"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"
             android:text="Sign Up"
             android:textAlignment="center"
             android:textColor="@color/black"
             android:textSize="16sp" />
-    </LinearLayout>
+    </RelativeLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
