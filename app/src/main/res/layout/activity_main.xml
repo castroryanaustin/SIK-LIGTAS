@@ -28,7 +28,7 @@
         android:layout_marginStart="16dp"
         android:layout_marginTop="16dp"
         android:layout_marginEnd="16dp"
-        android:layout_marginBottom="16dp"
+        android:layout_marginBottom="24dp"
         android:background="#F2CC61"
         android:text="@string/add_emergency_contact"
         android:textColor="@color/black" />

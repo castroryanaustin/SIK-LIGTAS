@@ -12,5 +12,5 @@ dependencyResolutionManagement {
         mavenCentral()
     }
 }
-rootProject.name = "SIK-LIGTAS_proto"
+rootProject.name = "SIK-LIGTAS"
 include ':app'

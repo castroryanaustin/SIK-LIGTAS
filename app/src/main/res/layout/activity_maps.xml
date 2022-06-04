@@ -6,8 +6,7 @@
     android:layout_height="match_parent"
     tools:context=".MapsActivity"
     android:id="@+id/maps_act"
-    android:background="@drawable/splash_bg"
-    >
+    android:background="@drawable/splash_bg">
 
     <RelativeLayout
         android:id="@+id/header_title"
@@ -30,9 +29,10 @@
             android:gravity="start"
             android:paddingStart="10dp"
             android:paddingEnd="10dp"
-            android:text="SIK-LIGTAS"
+            android:text="@string/sik_ligtas"
             android:textColor="#FFFFFF"
-            android:textSize="48sp" />
+            android:textSize="48sp"
+            tools:ignore="RelativeOverlap" />
 
         <androidx.appcompat.widget.AppCompatButton
             android:layout_centerVertical="true"
@@ -41,7 +41,7 @@
             android:layout_height="wrap_content"
             android:layout_toStartOf="@+id/sign_out_Btn"
             android:background="#00000000"
-            android:drawableRight="@drawable/ic_baseline_add_circle_outline_24" />
+            android:drawableEnd="@drawable/ic_baseline_add_circle_outline_24" />
 
         <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/sign_out_Btn"
@@ -52,10 +52,10 @@
             android:layout_gravity="end"
             android:layout_marginEnd="5dp"
             android:background="#00000000"
-            android:drawableRight="@drawable/ic_baseline_close_48" />
+            android:drawableEnd="@drawable/ic_baseline_close_48" />
     </RelativeLayout>
 
-    <fragment
+    <androidx.fragment.app.FragmentContainerView
         android:id="@+id/map"
         android:name="com.google.android.gms.maps.SupportMapFragment"
         android:layout_width="match_parent"
@@ -82,7 +82,7 @@
             android:layout_marginTop="24dp"
             android:fontFamily="@font/montserrat_bold"
             android:gravity="center"
-            android:text="Good Day,"
+            android:text="@string/time"
             android:textColor="#FFFFFF"
             android:textSize="48sp" />
 
@@ -94,7 +94,7 @@
             android:layout_below="@+id/textView4"
             android:fontFamily="@font/montserrat_bold"
             android:gravity="center"
-            android:text="Name"
+            android:text="@string/name"
             android:textColor="#FFFFFF"
             android:textSize="32sp" />
 
@@ -105,12 +105,12 @@
             android:layout_alignParentBottom="true"
             android:layout_centerHorizontal="true"
             android:layout_marginBottom="16dp"
-            android:drawableStart="@drawable/ic_baseline_location_on_24"
             android:fontFamily="@font/montserrat"
             android:padding="16dp"
-            android:text=" Location"
+            android:text="@string/location"
             android:textColor="#FFFFFF"
-            android:textSize="24sp" />
+            android:textSize="24sp"
+            app:drawableStartCompat="@drawable/ic_baseline_location_on_24" />
     </RelativeLayout>
 
 </RelativeLayout>

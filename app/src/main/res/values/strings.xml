@@ -1,11 +1,28 @@
 <resources>
-    <string name="app_name">SIK-LIGTAS_proto</string>
+    <string name="app_name">SIK-LIGTAS</string>
     <string name="title_activity_maps">MapsActivity</string>
     <string name="register_text">Let us start creating your account</string>
     <string name="first_name">First Name</string>
     <string name="last_name">Last Name</string>
-    <string name="phone_number">Phone Number</string>
+    <string name="full_name">Full Name</string>
+    <string name="phone_number">Phone Number (+63)</string>
     <string name="signup_text">Sign Up</string>
     <string name="add_emergency_contact">Add Emergency Contact</string>
     <string name="emergency_contacts">Emergency Contacts</string>
+    <string name="sik_ligtas">SIK-LIGTAS</string>
+    <string name="sign_up">Sign Up</string>
+    <string name="time"><![CDATA[<Time>]]></string>
+    <string name="name"><![CDATA[<Name>]]></string>
+    <string name="location"><![CDATA[<Location>]]></string>
+    <string name="phone"><![CDATA[<Phone>]]></string>
+    <string name="sign_in_with_phone">Sign In with Phone</string>
+    <string name="sign_in_with_email">Sign In with Email</string>
+    <string name="log_in">Log in</string>
+    <string name="email">Email</string>
+    <string name="pass">Password</string>
+    <string name="forgot_password">Forgot Password?</string>
+    <string name="new_to_sik_ligtas">New to SIK-LIGTAS?</string>
+    <string name="already_have_an_account">Already have an account?</string>
+    <string name="sign_up_with_email">SIGN UP WITH EMAIL</string>
+    <string name="login_to_your_account">LOGIN TO YOUR ACCOUNT</string>
 </resources>
