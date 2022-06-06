@@ -20,7 +20,7 @@
         android:layout_marginBottom="5dp">
 
         <TextView
-            android:id="@+id/textView3"
+            android:id="@+id/nav_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentStart="true"
@@ -35,13 +35,14 @@
             tools:ignore="RelativeOverlap" />
 
         <androidx.appcompat.widget.AppCompatButton
-            android:layout_centerVertical="true"
             android:id="@+id/contactBtn"
             android:layout_width="48dp"
             android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
             android:layout_toStartOf="@+id/sign_out_Btn"
             android:background="#00000000"
-            android:drawableEnd="@drawable/ic_baseline_add_circle_outline_24" />
+            android:drawableEnd="@drawable/ic_baseline_add_circle_outline_24"
+            tools:ignore="SpeakableTextPresentCheck" />
 
         <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/sign_out_Btn"
@@ -52,7 +53,8 @@
             android:layout_gravity="end"
             android:layout_marginEnd="5dp"
             android:background="#00000000"
-            android:drawableEnd="@drawable/ic_baseline_close_48" />
+            android:drawableEnd="@drawable/ic_baseline_close_48"
+            tools:ignore="SpeakableTextPresentCheck" />
     </RelativeLayout>
 
     <androidx.fragment.app.FragmentContainerView
@@ -75,11 +77,11 @@
         android:orientation="vertical">
 
         <TextView
-            android:id="@+id/textView4"
+            android:id="@+id/day_manager"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_alignParentTop="true"
-            android:layout_marginTop="24dp"
+            android:layout_marginTop="32dp"
             android:fontFamily="@font/montserrat_bold"
             android:gravity="center"
             android:text="@string/time"
@@ -88,18 +90,46 @@
 
         <TextView
 
-            android:id="@+id/textView5"
+            android:id="@+id/userName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/textView4"
+            android:layout_below="@+id/day_manager"
             android:fontFamily="@font/montserrat_bold"
+            android:layout_marginTop="5dp"
             android:gravity="center"
             android:text="@string/name"
             android:textColor="#FFFFFF"
             android:textSize="32sp" />
 
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/curr_location"
+            android:layout_below="@+id/userName"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentEnd="true"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <Button
+                android:id="@+id/LocationButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="10dp"
+                android:background="@drawable/round_btn"
+                android:drawableStart="@drawable/ic_baseline_location_on_48"
+                android:drawablePadding="10dp"
+                android:fontFamily="@font/montserrat"
+                android:padding="30dp"
+                android:text="TRACK"
+                android:textColor="#353839"
+                android:textSize="48sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
         <TextView
-            android:id="@+id/textView6"
+            android:id="@+id/curr_location"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
@@ -109,8 +139,8 @@
             android:padding="16dp"
             android:text="@string/location"
             android:textColor="#FFFFFF"
-            android:textSize="24sp"
-            app:drawableStartCompat="@drawable/ic_baseline_location_on_24" />
+            android:textSize="32sp" />
+
     </RelativeLayout>
 
 </RelativeLayout>

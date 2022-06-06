@@ -46,5 +46,12 @@
         <item name="windowNoTitle">true</item>
         <item name="android:windowIsFloating">false</item>
     </style>
+    <style name="Theme.SIKLIGTAS_proto.NoActionBar">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+    <style name="Theme.SIKLIGTAS_proto.AppBarOverlay"
+        parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
+    <style name="Theme.SIKLIGTAS_proto.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
 
 </resources>

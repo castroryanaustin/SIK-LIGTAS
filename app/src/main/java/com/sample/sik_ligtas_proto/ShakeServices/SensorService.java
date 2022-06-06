@@ -16,6 +16,7 @@ import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.telephony.SmsManager;
 import android.util.Log;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
@@ -171,12 +172,8 @@ public class SensorService extends Service {
 
 
     }
-
-    // For Build versions higher than Android Oreo, we launch
-    // a foreground service in a different way. This is due to the newly
-    // implemented strict notification rules, which require us to identify
-    // our own notification channel in order to view them correctly.
     @RequiresApi(Build.VERSION_CODES.O)
+
     private void startMyOwnForeground() {
         String NOTIFICATION_CHANNEL_ID = "example.permanence";
         String channelName = "Background Service";
@@ -190,11 +187,7 @@ public class SensorService extends Service {
         Notification notification = notificationBuilder.setOngoing(true)
                 .setContentTitle("We detected an unexpected collision")
                 .setContentText("Do you need medical assistance?")
-
-                // this is important, otherwise the notification will show the way
-                // you want i.e. it will show some default notification
                 .setSmallIcon(R.drawable.ic_launcher_foreground)
-
                 .setPriority(NotificationManager.IMPORTANCE_MIN)
                 .setCategory(Notification.CATEGORY_SERVICE)
                 .build();

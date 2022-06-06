@@ -1,22 +1,24 @@
 package com.sample.sik_ligtas_proto;
 
+import android.Manifest;
+import android.annotation.SuppressLint;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.location.Address;
+import android.location.Geocoder;
+import android.location.Location;
+import android.os.Bundle;
+import android.widget.Button;
+import android.widget.TextView;
+
+import androidx.annotation.NonNull;
 import androidx.appcompat.widget.AppCompatButton;
-import androidx.core.content.ContextCompat;
+import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.FragmentActivity;
 
-import android.content.Intent;
-import android.graphics.Point;
-import android.net.Uri;
-import android.os.Bundle;
-
-import com.android.volley.DefaultRetryPolicy;
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.RetryPolicy;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.Volley;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -24,156 +26,206 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.sample.sik_ligtas_proto.DirectionHelpers.FetchURL;
+import com.sample.sik_ligtas_proto.DirectionHelpers.TaskLoadedCallback;
 import com.sample.sik_ligtas_proto.databinding.ActivityMapsBinding;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
+public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, TaskLoadedCallback {
 
     private GoogleMap mMap;
-    private ActivityMapsBinding binding;
-    private AppCompatButton contactBtn;
-    private AppCompatButton sign_out_Btn;
+    private MarkerOptions place1, place2;
+    private Polyline currentPolyline;
+
+    List<MarkerOptions> markerOptionsList = new ArrayList<>();
+    TextView day_manager, curr_location, userName, nav_title;
+    FirebaseAuth fAuth;
+    FirebaseFirestore fStore;
+    String userId;
+    Button LocationButton;
+    FusedLocationProviderClient fusedLocationProviderClient;
+    SupportMapFragment mapFragment;
+
+    public MapsActivity() {
+    }
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        binding = ActivityMapsBinding.inflate(getLayoutInflater());
+        com.sample.sik_ligtas_proto.databinding.ActivityMapsBinding binding = ActivityMapsBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.map);
-        mapFragment.getMapAsync(this);
+        AppCompatButton sign_out_Btn = findViewById(R.id.sign_out_Btn);
+        curr_location = findViewById(R.id.curr_location);
+        day_manager = findViewById(R.id.day_manager);
+        AppCompatButton contactBtn = findViewById(R.id.contactBtn);
+        userName = findViewById(R.id.userName);
+        nav_title = findViewById(R.id.nav_title);
 
-        sign_out_Btn = findViewById(R.id.sign_out_Btn);
-        sign_out_Btn.setOnClickListener(e ->{
+
+        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+        if (ActivityCompat.checkSelfPermission(MapsActivity.this,
+                Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            getLocation();
+        } else {
+            ActivityCompat.requestPermissions(MapsActivity.this,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION,}, 44);
+        }
+
+        fAuth = FirebaseAuth.getInstance();
+        fStore = FirebaseFirestore.getInstance();
+        userId = Objects.requireNonNull(fAuth.getCurrentUser()).getUid();
+
+        DocumentReference documentReference = fStore.collection("users").document(userId);
+        documentReference.addSnapshotListener(this, (value, error) -> {
+            assert value != null;
+            userName.setText(value.getString("fName"));
+            userName.setTextSize(40);
+        });
+
+        sign_out_Btn.setOnClickListener(e -> {
             FirebaseAuth.getInstance().signOut();
             startActivity(new Intent(this, Welcome.class));
             finish();
         });
-        contactBtn = findViewById(R.id.contactBtn);
-        contactBtn.setOnClickListener(e ->
-        {
-            go_to_contacts();
-        });
+
+        contactBtn.setOnClickListener(e -> go_to_contacts());
+        myDay();
+
+        LocationButton = findViewById(R.id.LocationButton);
+        LocationButton.setOnClickListener(view -> new FetchURL(MapsActivity.this)
+                .execute(getUrl(place1.getPosition(), place2.getPosition()), "driving"));
+
+
+        place1 = new MarkerOptions().position(new LatLng(14.922322, 120.123123)).title("Location1");
+        place2 = new MarkerOptions().position(new LatLng(14.944777, 120.889943)).title("Location2");
+
+        markerOptionsList.add(place1);
+        markerOptionsList.add(place2);
+
+        mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
+        assert mapFragment != null;
+        mapFragment.getMapAsync(this);
+
     }
 
     @Override
-    public void onMapReady(GoogleMap googleMap) {
+    public void onMapReady(@NonNull GoogleMap googleMap) {
         mMap = googleMap;
-        direction();
+        mMap.addMarker(place1);
+        mMap.addMarker(place2);
+        showAllMarkers();
     }
 
-    private void direction(){
-        RequestQueue requestQueue = Volley.newRequestQueue(this);
-        String url = Uri.parse("https://maps.googleapis.com/maps/api/directions/json")
-                .buildUpon()
-                .appendQueryParameter("destination", "-6.9218571, 107.6048254")
-                .appendQueryParameter("origin", "-6.9249233, 107.6345122")
-                .appendQueryParameter("mode", "driving")
-                .appendQueryParameter("key", "AIzaSyDT8m8tN34FwnP9ucS3aEzwYtzLn3NHOpo")
-                .toString();
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
-            @Override
-            public void onResponse(JSONObject response) {
+    private void showAllMarkers() {
+        LatLngBounds.Builder builder = new LatLngBounds.Builder();
+        for (MarkerOptions m : markerOptionsList) {
+            builder.include(m.getPosition());
+        }
+        LatLngBounds bounds = builder.build();
+
+        int width = getResources().getDisplayMetrics().widthPixels;
+        int height = getResources().getDisplayMetrics().heightPixels;
+        int padding = (int) (width * 0.30);
+
+        CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, width, height, padding);
+        mMap.animateCamera(cu);
+
+    }
+
+    private String getUrl(LatLng origin, LatLng destination) {
+        String str_origin = "origin=" + origin.latitude + "," + origin.longitude;
+        String str_dest = "destination=" + destination.latitude + "," + destination.longitude;
+        String mode = "mode=" + "driving";
+        String parameter = str_origin + "&" + str_dest + "&" + mode;
+        String format = "json";
+
+        return "https://maps.googleapis.com/maps/api/directions/" + format + "?" + parameter + "&key=" + getString(R.string.google_maps_key);
+
+    }
+
+    private void getLocation() {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+        fusedLocationProviderClient.getLastLocation().addOnCompleteListener(task -> {
+            Location location = task.getResult();
+            if (location != null) {
                 try {
-                    String status = response.getString("status");
-                    if (status.equals("OK")) {
-                        JSONArray routes = response.getJSONArray("routes");
 
-                        ArrayList<LatLng> points;
-                        PolylineOptions polylineOptions = null;
+                    mapFragment.getMapAsync(googleMap -> {
+                        LatLng latLng = new LatLng(location.getLatitude(),location.getLongitude());
+                        MarkerOptions markerOptions = new MarkerOptions().position(latLng).title("You are Here");
 
-                        for (int i=0;i<routes.length();i++){
-                            points = new ArrayList<>();
-                            polylineOptions = new PolylineOptions();
-                            JSONArray legs = routes.getJSONObject(i).getJSONArray("legs");
+                        googleMap.addMarker(markerOptions);
+                        googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 17));
 
-                            for (int j=0;j<legs.length();j++){
-                                JSONArray steps = legs.getJSONObject(j).getJSONArray("steps");
+                    });
 
-                                for (int k=0;k<steps.length();k++){
-                                    String polyline = steps.getJSONObject(k).getJSONObject("polyline").getString("points");
-                                    List<LatLng> list = decodePoly(polyline);
+                    Geocoder geocoder = new Geocoder(MapsActivity.this, Locale.getDefault());
+                    List<Address> addresses = geocoder.getFromLocation(
+                            location.getLatitude(), location.getLongitude(), 1
+                    );
+                    curr_location.setText(addresses.get(0).getLocality());
 
-                                    for (int l=0;l<list.size();l++){
-                                        LatLng position = new LatLng((list.get(l)).latitude, (list.get(l)).longitude);
-                                        points.add(position);
-                                    }
-                                }
-                            }
-                            polylineOptions.addAll(points);
-                            polylineOptions.width(10);
-                            polylineOptions.color(ContextCompat.getColor(MapsActivity.this, R.color.purple_500));
-                            polylineOptions.geodesic(true);
-                        }
-                        mMap.addPolyline(polylineOptions);
-                        mMap.addMarker(new MarkerOptions().position(new LatLng(-6.9249233, 107.6345122)).title("Marker 1"));
-                        mMap.addMarker(new MarkerOptions().position(new LatLng(-6.9218571, 107.6048254)).title("Marker 1"));
-
-                        LatLngBounds bounds = new LatLngBounds.Builder()
-                                .include(new LatLng(-6.9249233, 107.6345122))
-                                .include(new LatLng(-6.9218571, 107.6048254)).build();
-                        Point point = new Point();
-                        getWindowManager().getDefaultDisplay().getSize(point);
-                        mMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, point.x, 150, 30));
-                    }
-                } catch (JSONException e) {
+                } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-
-            }
         });
-        RetryPolicy retryPolicy = new DefaultRetryPolicy(30000, DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT);
-        jsonObjectRequest.setRetryPolicy(retryPolicy);
-        requestQueue.add(jsonObjectRequest);
     }
-    private List<LatLng> decodePoly(String encoded){
-        List<LatLng> poly = new ArrayList<>();
-        int index = 0, len = encoded.length();
-        int lat = 0, lng = 0;
 
-        while (index < len) {
-            int b, shift = 0, result = 0;
-            do {
-                b = encoded.charAt(index++) - 63;
-                result |= (b & 0x1f) << shift;
-                shift += 5;
-            } while (b >= 0x20);
-            int dlat = ((result & 1) != 0 ? ~(result >> 1) : (result >> 1));
-            lat += dlat;
+    @SuppressLint("SetTextI18n")
+    public void myDay(){
+        // The greetings changes depend on the day
+        Calendar calendar = Calendar.getInstance();
+        int day = calendar.get(Calendar.HOUR_OF_DAY);
 
-            shift = 0;
-            result = 0;
-            do {
-                b = encoded.charAt(index++) - 63;
-                result |= (b & 0x1f) << shift;
-                shift += 5;
-            } while (b > 0x20);
-            int dlng = ((result & 1) != 0 ? ~(result >> 1) : (result >> 1));
-            lng += dlng;
+        if(day < 12){
+            day_manager.setText("Good Morning,");
+            day_manager.setTextSize(40);
 
-            LatLng p = new LatLng((((double) lat / 1E5)),
-                    (((double) lng / 1E5)));
-            poly.add(p);
         }
-        return poly;
+        else if(day < 16){
+            day_manager.setText("Good Afternoon,");
+            day_manager.setTextSize(40);
+        }
+        else if(day >= 17 && day < 21){
+            day_manager.setText("Good Evening,");
+            day_manager.setTextSize(40);
+        }
+        else if(day >= 21){
+            day_manager.setText("Good Night,");
+            day_manager.setTextSize(40);
+        }
+        else{
+            day_manager.setText("Good Morning,");
+            day_manager.setTextSize(40);
+        }
     }
 
     private void go_to_contacts(){
         startActivity(new Intent(this, MainActivity.class));
+    }
+
+    @Override
+    public void onTaskDone(Object... values) {
+        if (currentPolyline != null)
+            currentPolyline.remove();
+
+        currentPolyline = mMap.addPolyline((PolylineOptions) values[0]);
     }
 }

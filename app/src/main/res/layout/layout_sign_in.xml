@@ -45,7 +45,7 @@
             android:drawableStart="@drawable/ic_baseline_phone_24"
             android:fontFamily="@font/montserrat"
             android:padding="16dp"
-            android:text="@string/login_to_your_account"
+            android:text="LOGIN TO YOUR ACCOUNT"
             android:textColor="@color/black" />
 
         <Button
