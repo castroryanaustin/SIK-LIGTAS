@@ -35,26 +35,17 @@
             tools:ignore="RelativeOverlap" />
 
         <androidx.appcompat.widget.AppCompatButton
-            android:id="@+id/contactBtn"
+            android:id="@+id/menuBtn"
             android:layout_width="48dp"
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
-            android:layout_toStartOf="@+id/sign_out_Btn"
+            android:layout_alignParentEnd="true"
+            android:layout_marginEnd="10dp"
             android:background="#00000000"
-            android:drawableEnd="@drawable/ic_baseline_add_circle_outline_24"
+            android:drawableEnd="@drawable/ic_baseline_menu_48"
             tools:ignore="SpeakableTextPresentCheck" />
 
-        <androidx.appcompat.widget.AppCompatButton
-            android:id="@+id/sign_out_Btn"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true"
-            android:layout_gravity="end"
-            android:layout_marginEnd="5dp"
-            android:background="#00000000"
-            android:drawableEnd="@drawable/ic_baseline_close_48"
-            tools:ignore="SpeakableTextPresentCheck" />
+
     </RelativeLayout>
 
     <androidx.fragment.app.FragmentContainerView

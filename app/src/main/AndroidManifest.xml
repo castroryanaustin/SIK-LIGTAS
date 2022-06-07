@@ -10,11 +10,6 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.INTERNET" />
-    <!--
-This permission is necessary for devices
-    with Android O and above, so that
-    we can use the location ALL THE TIME
-    -->
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" /> <!-- We also ask user to remove any battery optimization constraints during runtime -->
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
 
@@ -26,17 +21,7 @@ This permission is necessary for devices
         android:supportsRtl="true"
         android:theme="@style/Theme.SIKLIGTAS_proto"
         tools:ignore="GoogleAppIndexingWarning" >
-        <!--
-             TODO: Before you run your application, you need a Google Maps API key.
 
-             To get one, follow the directions here:
-
-                https://developers.google.com/maps/documentation/android-sdk/get-api-key
-
-             Once you have your API key (it starts with "AIza"), define a new property in your
-             project's local.properties file (e.g. MAPS_API_KEY=Aiza...), and replace the
-             "YOUR_API_KEY" string in this file with "${MAPS_API_KEY}".
-        -->
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyDT8m8tN34FwnP9ucS3aEzwYtzLn3NHOpo" />
@@ -71,6 +56,11 @@ This permission is necessary for devices
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".NavMenu"
+            android:enabled="true"
+            android:exported="true" />
         <activity
             android:name=".Login"
             android:enabled="true"

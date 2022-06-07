@@ -36,4 +36,15 @@
     <string name="menu_home">Home</string>
     <string name="menu_gallery">Gallery</string>
     <string name="menu_slideshow">Slideshow</string>
+    <string name="logout">LOGOUT</string>
+    <string name="your_profile">Your Profile</string>
+    <string name="your_name">Your Name</string>
+    <string name="your_email_address">Your Email Address</string>
+    <string name="your_phone">Your Phone</string>
+    <string name="help">Help</string>
+    <string name="first_aid_instructions">FIRST AID INSTRUCTIONS</string>
+    <string name="application_guide">APPLICATION GUIDE</string>
+    <string name="credits">CREDITS</string>
+    <string name="add_contacts">ADD CONTACTS</string>
+    <string name="first_aid_guide">FIRST AID GUIDE</string>
 </resources>

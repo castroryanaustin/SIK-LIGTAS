@@ -8,6 +8,8 @@ import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
@@ -49,6 +51,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private Polyline currentPolyline;
 
     List<MarkerOptions> markerOptionsList = new ArrayList<>();
+    AppCompatButton menuBtn;
     TextView day_manager, curr_location, userName, nav_title;
     FirebaseAuth fAuth;
     FirebaseFirestore fStore;
@@ -57,9 +60,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     FusedLocationProviderClient fusedLocationProviderClient;
     SupportMapFragment mapFragment;
 
-    public MapsActivity() {
-    }
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
 
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,10 +73,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         com.sample.sik_ligtas_proto.databinding.ActivityMapsBinding binding = ActivityMapsBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        AppCompatButton sign_out_Btn = findViewById(R.id.sign_out_Btn);
         curr_location = findViewById(R.id.curr_location);
         day_manager = findViewById(R.id.day_manager);
-        AppCompatButton contactBtn = findViewById(R.id.contactBtn);
+        menuBtn = findViewById(R.id.menuBtn);
         userName = findViewById(R.id.userName);
         nav_title = findViewById(R.id.nav_title);
 
@@ -96,13 +100,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             userName.setTextSize(40);
         });
 
-        sign_out_Btn.setOnClickListener(e -> {
-            FirebaseAuth.getInstance().signOut();
-            startActivity(new Intent(this, Welcome.class));
-            finish();
+        menuBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                go_to_menu();
+            }
         });
 
-        contactBtn.setOnClickListener(e -> go_to_contacts());
         myDay();
 
         LocationButton = findViewById(R.id.LocationButton);
@@ -110,7 +114,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 .execute(getUrl(place1.getPosition(), place2.getPosition()), "driving"));
 
 
-        place1 = new MarkerOptions().position(new LatLng(14.922322, 120.123123)).title("Location1");
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+        fusedLocationProviderClient.getLastLocation().addOnCompleteListener(e-> {
+            Location location = e.getResult();
+            this.longitude = location.getLongitude();
+            this.latitude = location.getLatitude();
+            System.out.println(this.longitude + "----------------------------" + this.latitude);
+        });
+        System.out.println(this.longitude + "----------------------------" + this.latitude);
+        place1 = new MarkerOptions().position(new LatLng(this.latitude, this.longitude)).title("Location1");
         place2 = new MarkerOptions().position(new LatLng(14.944777, 120.889943)).title("Location2");
 
         markerOptionsList.add(place1);
@@ -155,6 +169,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         return "https://maps.googleapis.com/maps/api/directions/" + format + "?" + parameter + "&key=" + getString(R.string.google_maps_key);
 
+    }
+
+    private double longitude, latitude;
+
+    private void getCurrLocation() {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+        fusedLocationProviderClient.getLastLocation().addOnCompleteListener(e-> {
+            Location location = e.getResult();
+                this.longitude = location.getLongitude();
+                this.latitude = location.getLatitude();
+        });
     }
 
     private void getLocation() {
@@ -217,8 +244,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
-    private void go_to_contacts(){
-        startActivity(new Intent(this, MainActivity.class));
+    private void go_to_menu(){
+        startActivity(new Intent(this, NavMenu.class));
     }
 
     @Override
