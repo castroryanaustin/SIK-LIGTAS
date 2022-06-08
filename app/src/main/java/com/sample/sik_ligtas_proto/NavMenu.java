@@ -76,6 +76,13 @@ public class NavMenu extends AppCompatActivity {
             }
         });
 
+        credits.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(NavMenu.this, Credits.class));
+            }
+        });
+
 
     }
 

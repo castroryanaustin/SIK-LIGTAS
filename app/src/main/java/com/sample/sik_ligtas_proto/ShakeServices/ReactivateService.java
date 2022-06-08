@@ -18,4 +18,3 @@ public class ReactivateService extends BroadcastReceiver {
         }
     }
 }
-

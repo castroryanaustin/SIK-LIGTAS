@@ -2,13 +2,15 @@ package com.sample.sik_ligtas_proto;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.ActivityManager;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
 import android.os.Bundle;
-import android.view.Menu;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -35,6 +37,7 @@ import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.sample.sik_ligtas_proto.DirectionHelpers.FetchURL;
 import com.sample.sik_ligtas_proto.DirectionHelpers.TaskLoadedCallback;
+import com.sample.sik_ligtas_proto.ShakeServices.SensorService;
 import com.sample.sik_ligtas_proto.databinding.ActivityMapsBinding;
 
 import java.io.IOException;
@@ -46,6 +49,7 @@ import java.util.Objects;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, TaskLoadedCallback {
 
+    private double latitude, longitude;
     private GoogleMap mMap;
     private MarkerOptions place1, place2;
     private Polyline currentPolyline;
@@ -60,15 +64,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     FusedLocationProviderClient fusedLocationProviderClient;
     SupportMapFragment mapFragment;
 
-    @Override
-    public void onBackPressed() {
-        super.onBackPressed();
-
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // start the service
+        SensorService sensorService = new SensorService();
+        Intent intent = new Intent(this, sensorService.getClass());
+        if (!isMyServiceRunning(sensorService.getClass())) {
+            startService(intent);
+        }
 
         com.sample.sik_ligtas_proto.databinding.ActivityMapsBinding binding = ActivityMapsBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
@@ -78,7 +84,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         menuBtn = findViewById(R.id.menuBtn);
         userName = findViewById(R.id.userName);
         nav_title = findViewById(R.id.nav_title);
-
 
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
         if (ActivityCompat.checkSelfPermission(MapsActivity.this,
@@ -113,32 +118,37 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         LocationButton.setOnClickListener(view -> new FetchURL(MapsActivity.this)
                 .execute(getUrl(place1.getPosition(), place2.getPosition()), "driving"));
 
-
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            return;
-        }
-        fusedLocationProviderClient.getLastLocation().addOnCompleteListener(e-> {
-            Location location = e.getResult();
-            this.longitude = location.getLongitude();
-            this.latitude = location.getLatitude();
-            System.out.println(this.longitude + "----------------------------" + this.latitude);
-        });
-        System.out.println(this.longitude + "----------------------------" + this.latitude);
-        place1 = new MarkerOptions().position(new LatLng(this.latitude, this.longitude)).title("Location1");
-        place2 = new MarkerOptions().position(new LatLng(14.944777, 120.889943)).title("Location2");
-
-        markerOptionsList.add(place1);
-        markerOptionsList.add(place2);
-
         mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         assert mapFragment != null;
         mapFragment.getMapAsync(this);
 
+        getCurrLocation();
+    }
+
+    private boolean isMyServiceRunning(Class<?> serviceClass) {
+        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.getName().equals(service.service.getClassName())) {
+                Log.i("Service status", "Running");
+                return true;
+            }
+        }
+        Log.i("Service status", "Not running");
+        return false;
     }
 
     @Override
     public void onMapReady(@NonNull GoogleMap googleMap) {
         mMap = googleMap;
+    }
+
+    private void setMarkers(){
+        place1 = new MarkerOptions().position(new LatLng(latitude, longitude)).title("You are Here");
+        place2 = new MarkerOptions().position(new LatLng(14.9447777, 120.8899436)).title("Need Urgent Assistance");
+
+        markerOptionsList.add(place1);
+        markerOptionsList.add(place2);
+
         mMap.addMarker(place1);
         mMap.addMarker(place2);
         showAllMarkers();
@@ -171,16 +181,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     }
 
-    private double longitude, latitude;
+
 
     private void getCurrLocation() {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
         }
-        fusedLocationProviderClient.getLastLocation().addOnCompleteListener(e-> {
-            Location location = e.getResult();
-                this.longitude = location.getLongitude();
-                this.latitude = location.getLatitude();
+        fusedLocationProviderClient.getLastLocation().addOnSuccessListener(e -> {
+
+            longitude = e.getLongitude();
+            latitude = e.getLatitude();
+
+            System.out.println(latitude + "--------++++----------" + longitude);
+            setMarkers(); // call back
         });
     }
 
