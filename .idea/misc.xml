@@ -3,6 +3,7 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/Documents/GitHub/SIK-LIGTAS-App/app/src/main/res/layout/activity_alert.xml" value="0.33" />
         <entry key="..\:/Documents/source_codes_logic_circuits/SIKLIGTAS_proto/app/src/main/res/layout/activity_main.xml" value="0.27291666666666664" />
         <entry key="..\:/Documents/source_codes_logic_circuits/SIKLIGTAS_proto/app/src/main/res/layout/item_user.xml" value="0.271875" />
         <entry key="..\:/Documents/source_codes_logic_circuits/SIKLIGTAS_proto/app/src/main/res/xml/item_user.xml" value="0.27291666666666664" />
@@ -18,9 +19,7 @@
         <entry key="..\:/Users/mango/Desktop/SIK-LIGTAS Application/app/src/main/res/drawable/ic_baseline_location_on_24.xml" value="0.2015" />
         <entry key="..\:/Users/mango/Desktop/SIK-LIGTAS Application/app/src/main/res/drawable/ic_baseline_people_24.xml" value="0.2015" />
         <entry key="..\:/Users/mango/Desktop/SIK-LIGTAS Application/app/src/main/res/drawable/round_btn.xml" value="0.2015" />
-        <entry key="..\:/Users/mango/Desktop/SIK-LIGTAS Application/app/src/main/res/layout/activity_alert.xml" value="0.23052536231884058" />
         <entry key="..\:/Users/mango/Desktop/SIK-LIGTAS Application/app/src/main/res/layout/activity_credits.xml" value="0.23052536231884058" />
-        <entry key="..\:/Users/mango/Desktop/SIK-LIGTAS Application/app/src/main/res/layout/activity_dialog.xml" value="0.23052536231884058" />
         <entry key="..\:/Users/mango/Desktop/SIK-LIGTAS Application/app/src/main/res/layout/activity_main.xml" value="0.264" />
         <entry key="..\:/Users/mango/Desktop/SIK-LIGTAS Application/app/src/main/res/layout/activity_maps.xml" value="0.176" />
         <entry key="..\:/Users/mango/Desktop/SIK-LIGTAS Application/app/src/main/res/layout/activity_side_nav.xml" value="0.23052536231884058" />

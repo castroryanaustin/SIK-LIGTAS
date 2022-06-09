@@ -13,6 +13,7 @@ import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.telephony.SmsManager;
 import android.util.Log;
 import android.widget.Button;
@@ -64,6 +65,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private MarkerOptions place1, place2;
     private Polyline currentPolyline;
     private AlertDialog alertDialog;
+    private long TimerLeftInMillis = Start_time_millis;
+    final static long Start_time_millis = 120000;
+    CountDownTimer timer;
 
 
     List<MarkerOptions> markerOptionsList = new ArrayList<>();
@@ -76,9 +80,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     FusedLocationProviderClient fusedLocationProviderClient;
     SupportMapFragment mapFragment;
 
-
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -90,9 +91,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             // check if the user has shook
             // the phone for 3 time in a row
             if (count == 3) {
-
                 AlertMe();
-
             }
         });
 
@@ -150,8 +149,22 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         getCurrLocation();
     }
 
-    private void AlertMe() {
+    private void timer(){
+        timer = new CountDownTimer(TimerLeftInMillis, 1000){
+            @Override
+            public void onTick(long millisuntilfinish){
+                TimerLeftInMillis=millisuntilfinish;
+            }
+            @Override
+            public void onFinish() {
+                CallServices();
+            }
+        };
+    }
 
+    private void AlertMe() {
+        TimerLeftInMillis = Start_time_millis;
+        timer();
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(MapsActivity.this);
         alertDialogBuilder.setTitle("We detected an unexpected collision");
         alertDialogBuilder.setCancelable(false);
@@ -164,7 +177,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         alertDialogBuilder.create();
         alertDialogBuilder.show();
     }
-
 
     public void CallServices() {
         FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(getApplicationContext());
@@ -268,8 +280,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         return "https://maps.googleapis.com/maps/api/directions/" + format + "?" + parameter + "&key=" + getString(R.string.google_maps_key);
 
     }
-
-
 
     private void getCurrLocation() {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
