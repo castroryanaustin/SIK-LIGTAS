@@ -88,7 +88,9 @@ public class SensorService extends Service {
                 // check if the user has shook
                 // the phone for 3 time in a row
                 if (count == 3) {
+
                     vibrate();
+
                 }
             }
         });
