@@ -3,18 +3,20 @@ package com.sample.sik_ligtas_proto;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+
 import androidx.appcompat.app.AppCompatActivity;
+
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+
 import java.util.Objects;
 
 public class NavMenu extends AppCompatActivity {
 
-    TextView fullName, email, phone, back, addContacts, firstAidGuide, credits;
+    TextView fullName, email, phone, back, addContacts, firstAidGuide, credits, help;
     FirebaseAuth fAuth;
     FirebaseFirestore fStore;
     String userId;
@@ -38,6 +40,7 @@ public class NavMenu extends AppCompatActivity {
         fAuth = FirebaseAuth.getInstance();
         fStore = FirebaseFirestore.getInstance();
         userId = Objects.requireNonNull(fAuth.getCurrentUser()).getUid();
+        help = findViewById(R.id.help);
 
         DocumentReference documentReference = fStore.collection("users").document(userId);
         documentReference.addSnapshotListener(this, (value, error) -> {
@@ -47,41 +50,20 @@ public class NavMenu extends AppCompatActivity {
             phone.setText(value.getString("phone"));
         });
 
-        logout.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                    FirebaseAuth.getInstance().signOut();
-                    startActivity(new Intent(NavMenu.this, Welcome.class));
-                    finish();
-            }
-        });
-        back.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        logout.setOnClickListener(view -> {
+                FirebaseAuth.getInstance().signOut();
+                startActivity(new Intent(NavMenu.this, Welcome.class));
                 finish();
-            }
         });
+        back.setOnClickListener(v -> finish());
 
-        addContacts.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(NavMenu.this, MainActivity.class));
-            }
-        });
+        addContacts.setOnClickListener(v -> startActivity(new Intent(NavMenu.this, MainActivity.class)));
 
-        firstAidGuide.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                openAid();
-            }
-        });
+        firstAidGuide.setOnClickListener(v -> openAid());
 
-        credits.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(NavMenu.this, Credits.class));
-            }
-        });
+        credits.setOnClickListener(v -> startActivity(new Intent(NavMenu.this, Credits.class)));
+
+        help.setOnClickListener(v -> startActivity(new Intent(NavMenu.this, AppHelp.class)));
 
 
     }

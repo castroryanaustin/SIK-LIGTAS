@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:background="@drawable/splash_bg"
     android:layout_width="match_parent"
@@ -14,22 +13,6 @@
         tools:ignore="UselessParent"
         tools:layout_editor_absoluteX="-16dp"
         tools:layout_editor_absoluteY="366dp">
-
-        <TextView
-            android:id="@+id/log_text2"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/logo"
-            android:layout_alignParentStart="true"
-            android:layout_alignParentEnd="true"
-            android:layout_marginStart="16dp"
-            android:layout_marginBottom="10dp"
-            android:layout_marginEnd="16dp"
-            android:fontFamily="@font/montserrat"
-            android:gravity="center"
-            android:text="@string/members"
-            android:textColor="@color/white"
-            android:textSize="32sp" />
 
         <TextView
             android:id="@+id/log_title"
@@ -52,28 +35,33 @@
             android:layout_below="@+id/log_title"
             android:layout_alignParentStart="true"
             android:layout_alignParentEnd="true"
-            android:layout_marginTop="48dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="16dp"
             android:fontFamily="@font/montserrat"
             android:gravity="center"
-            android:text="@string/created_by"
+            android:scrollbars="vertical"
+            android:text="Hello, cyclist! We are here to help you to use our SIK-LIGTAS application. This manual will guide you to the amazing features of this application. You can follow these steps and instructions to save time using SIK-LIGTAS."
             android:textColor="@color/white"
-            android:textSize="32sp" />
+            android:textSize="14sp" />
 
 
         <TextView
-            android:id="@+id/log_name3"
+            android:id="@+id/log_text2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@id/log_text2"
+            android:layout_below="@+id/log_text"
             android:layout_alignParentStart="true"
             android:layout_alignParentEnd="true"
-            android:layout_marginStart="0dp"
-            android:layout_marginEnd="0dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="16dp"
             android:fontFamily="@font/montserrat"
-            android:gravity="center"
-            android:text="@string/jacamile_louwie_i_nclemente_justine_lorenze_b_ncao_kharl_rhoy_c_nsagun_ivan_michael_r_ndomingo_neal_clarence_m_ncrisol_ryan_carlo_nbanag_jade_ross_napostol_bob_leo_a_ntolentino_marc_angelo_c_ndiaz_maklin_carl_d"
+            android:gravity="left"
+            android:scrollbars="vertical"
+            android:text="How to log-out in SIK-LIGTAS application?\n\nStep 1: Go to Menu (triple bar on the upper right)\nStep 2: Click the “Log out” button\nStep 3: Exit the application\n\nHow can we assist other cyclists using the SIK-LIGTAS application?\nStep 1: Emergency alert will automatically notify you\nStep 2: Click the “Track Now” button that will pop up\nStep 3: Look for the Need Urgent Assistance pin on your map to locate the cyclist.\n\nHow to perform first aid to injured cyclists?\nStep 1: Go to Menu (triple bar on the upper right)\nStep 2: Click the First Aid Guide Step 3: Perform the first aid procedures in the given link\n\nHow to add emergency contacts to our SIK-LIGTAS application?\nStep 1: Go to Menu (triple bar on the upper right)\nStep 2: Click the “Add Contact” button\nStep 3: Click the “Add Emergency Contacts” button\nStep 4: Choose the contact you want to add\nStep 5: After choosing, it will automatically add the contact."
             android:textColor="@color/white"
-            android:textSize="22sp" />
+            android:textSize="14sp" />
 
         <Button
             android:id="@+id/btn_back"
@@ -95,16 +83,6 @@
             android:textAlignment="center"
             android:textColor="@color/black"
             android:textSize="16sp" />
-
-        <ImageView
-            android:layout_alignParentStart="true"
-            android:layout_alignParentEnd="true"
-            android:id="@+id/logo"
-            android:layout_width="wrap_content"
-            android:layout_height="100dp"
-            android:layout_below="@+id/log_text"
-            android:padding="16dp"
-            app:srcCompat="@drawable/pearl_orient_logo" />
 
 
     </RelativeLayout>

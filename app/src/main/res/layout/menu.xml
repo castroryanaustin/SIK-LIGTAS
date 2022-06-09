@@ -109,6 +109,21 @@
                 android:textStyle="bold" />
 
             <TextView
+                android:id="@+id/help"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginBottom="16dp"
+                android:drawableStart="@drawable/ic_baseline_help_outline_24"
+                android:drawablePadding="10dp"
+                android:fontFamily="@font/montserrat"
+                android:gravity="center"
+                android:text="@string/how_to_use_app"
+                android:textColor="@color/white"
+                android:textSize="24sp"
+                android:textStyle="bold" />
+
+            <TextView
                 android:id="@+id/emergency_contact"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

@@ -73,6 +73,11 @@
             android:name=".Credits"
             android:enabled="true"
             android:exported="true" />
+
+        <activity
+            android:name=".AppHelp"
+            android:enabled="true"
+            android:exported="true"/>
     </application>
 
 </manifest>
