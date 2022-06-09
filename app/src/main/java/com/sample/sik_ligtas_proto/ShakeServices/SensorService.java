@@ -2,7 +2,6 @@ package com.sample.sik_ligtas_proto.ShakeServices;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -38,7 +37,6 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.OnTokenCanceledListener;
 
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.sample.sik_ligtas_proto.Contacts.ContactModel;
 import com.sample.sik_ligtas_proto.Contacts.DbHelper;
 import com.sample.sik_ligtas_proto.R;
@@ -53,8 +51,6 @@ public class SensorService extends Service {
     private Sensor mAccelerometer;
     private ShakeDetector mShakeDetector;
 
-    public SensorService() {
-    }
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -94,7 +90,6 @@ public class SensorService extends Service {
                 if (count == 3) {
 
                     vibrate();
-                    AlertMe();
 
                 }
             }
@@ -104,79 +99,7 @@ public class SensorService extends Service {
         mSensorManager.registerListener(mShakeDetector, mAccelerometer, SensorManager.SENSOR_DELAY_UI);
     }
 
-    private void AlertMe() {
-        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(SensorService.this);
-        alertDialogBuilder.setTitle("We detected an unexpected collision");
-        alertDialogBuilder.setMessage("Do you need medical assistance? If you don't respond within 2 minutes, I will notify everyone on your emergency contacts.");
-        alertDialogBuilder.setPositiveButton("YES", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    Toast.makeText(SensorService.this, "Requesting Emergency Services", Toast.LENGTH_SHORT).show();
-                    CallServices();
-                }
-            });
-        alertDialogBuilder.setNegativeButton("NO", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    Toast.makeText(SensorService.this, "Request for Emergency Services Cancelled", Toast.LENGTH_SHORT).show();
-                }
-            });
-        AlertDialog alertDialog = alertDialogBuilder.create();
-        alertDialogBuilder.show();
-    }
 
-    private void CallServices() {
-        FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(getApplicationContext());
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            return;
-        }
-        fusedLocationClient.getCurrentLocation(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY, new CancellationToken() {
-            @Override
-            public boolean isCancellationRequested() {
-                return false;
-            }
-
-            @NonNull
-            @Override
-            public CancellationToken onCanceledRequested(@NonNull OnTokenCanceledListener onTokenCanceledListener) {
-                return null;
-            }
-        }).addOnSuccessListener(new OnSuccessListener<Location>() {
-            @Override
-            public void onSuccess(Location location) {
-                if (location != null) {
-                    SmsManager smsManager = SmsManager.getDefault();
-                    DbHelper db = new DbHelper(SensorService.this);
-                    List<ContactModel> list = db.getAllContacts();
-
-                    for (ContactModel c : list) {
-                        String message = "Hey " + c.getName() + ", I am in DANGER, I need help. Please urgently reach me out. Here are my coordinates.\n " + "http://maps.google.com/?q=" + location.getLatitude() + "," + location.getLongitude();
-                        smsManager.sendTextMessage(c.getPhoneNo(), null, message, null, null);
-                    }
-                } else {
-                    String message = "I am in DANGER, I need help. Please urgently reach me out.\n" + "GPS was turned off. Couldn't find location. Call your nearest Police Station.";
-                    SmsManager smsManager = SmsManager.getDefault();
-                    DbHelper db = new DbHelper(SensorService.this);
-                    List<ContactModel> list = db.getAllContacts();
-                    for (ContactModel c : list) {
-                        smsManager.sendTextMessage(c.getPhoneNo(), null, message, null, null);
-                    }
-                }
-            }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                Log.d("Check: ", "OnFailure");
-                String message = "I am in DANGER, I need help. Please urgently reach me out.\n" + "GPS was turned off. Couldn't find location. Call your nearest Police Station.";
-                SmsManager smsManager = SmsManager.getDefault();
-                DbHelper db = new DbHelper(SensorService.this);
-                List<ContactModel> list = db.getAllContacts();
-                for (ContactModel c : list) {
-                    smsManager.sendTextMessage(c.getPhoneNo(), null, message, null, null);
-                }
-            }
-        });
-    }
 
 
     // method to vibrate the phone

@@ -3,17 +3,21 @@ package com.sample.sik_ligtas_proto;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.ActivityManager;
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.hardware.Sensor;
+import android.hardware.SensorManager;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
 import android.os.Bundle;
+import android.telephony.SmsManager;
 import android.util.Log;
-import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.AppCompatButton;
@@ -21,6 +25,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.FragmentActivity;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -32,12 +37,17 @@ import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.android.gms.tasks.CancellationToken;
+import com.google.android.gms.tasks.OnTokenCanceledListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.sample.sik_ligtas_proto.Contacts.ContactModel;
+import com.sample.sik_ligtas_proto.Contacts.DbHelper;
 import com.sample.sik_ligtas_proto.DirectionHelpers.FetchURL;
 import com.sample.sik_ligtas_proto.DirectionHelpers.TaskLoadedCallback;
 import com.sample.sik_ligtas_proto.ShakeServices.SensorService;
+import com.sample.sik_ligtas_proto.ShakeServices.ShakeDetector;
 import com.sample.sik_ligtas_proto.databinding.ActivityMapsBinding;
 
 import java.io.IOException;
@@ -47,12 +57,14 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, TaskLoadedCallback {
+public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, TaskLoadedCallback{
 
     private double latitude, longitude;
     private GoogleMap mMap;
     private MarkerOptions place1, place2;
     private Polyline currentPolyline;
+    private AlertDialog alertDialog;
+
 
     List<MarkerOptions> markerOptionsList = new ArrayList<>();
     AppCompatButton menuBtn;
@@ -65,9 +77,27 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     SupportMapFragment mapFragment;
 
 
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        SensorManager mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        Sensor mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        ShakeDetector mShakeDetector = new ShakeDetector();
+        mShakeDetector.setOnShakeListener(count -> {
+            // check if the user has shook
+            // the phone for 3 time in a row
+            if (count == 3) {
+
+                AlertMe();
+
+            }
+        });
+
+        // register the listener
+        mSensorManager.registerListener(mShakeDetector, mAccelerometer, SensorManager.SENSOR_DELAY_UI);
 
         // start the service
         SensorService sensorService = new SensorService();
@@ -105,12 +135,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             userName.setTextSize(40);
         });
 
-        menuBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                go_to_menu();
-            }
-        });
+        menuBtn.setOnClickListener(v -> go_to_menu());
 
         myDay();
 
@@ -123,6 +148,69 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mapFragment.getMapAsync(this);
 
         getCurrLocation();
+    }
+
+    private void AlertMe() {
+
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(MapsActivity.this);
+        alertDialogBuilder.setTitle("We detected an unexpected collision");
+        alertDialogBuilder.setCancelable(false);
+        alertDialogBuilder.setMessage("Do you need medical assistance? If you don't respond within 2 minutes, I will notify everyone on your emergency contacts.");
+        alertDialogBuilder.setPositiveButton("YES", (dialog, which) -> {
+            Toast.makeText(MapsActivity.this, "Requesting Emergency Services", Toast.LENGTH_SHORT).show();
+            CallServices();
+        });
+        alertDialogBuilder.setNegativeButton("CANCEL", (dialog, which) -> Toast.makeText(MapsActivity.this, "Request for Emergency Services Cancelled", Toast.LENGTH_SHORT).show());
+        alertDialogBuilder.create();
+        alertDialogBuilder.show();
+    }
+
+
+    public void CallServices() {
+        FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(getApplicationContext());
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+        fusedLocationClient.getCurrentLocation(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY, new CancellationToken() {
+            @Override
+            public boolean isCancellationRequested() {
+                return false;
+            }
+
+            @NonNull
+            @Override
+            public CancellationToken onCanceledRequested(@NonNull OnTokenCanceledListener onTokenCanceledListener) {
+                return null;
+            }
+        }).addOnSuccessListener(location -> {
+            if (location != null) {
+                SmsManager smsManager = SmsManager.getDefault();
+                DbHelper db = new DbHelper(MapsActivity.this);
+                List<ContactModel> list = db.getAllContacts();
+
+                for (ContactModel c : list) {
+                    String message = "Hey " + c.getName() + ", I am in DANGER, I need help. Please urgently reach me out. Here are my coordinates.\n " + "http://maps.google.com/?q=" + location.getLatitude() + "," + location.getLongitude();
+                    smsManager.sendTextMessage(c.getPhoneNo(), null, message, null, null);
+                }
+            } else {
+                String message = "I am in DANGER, I need help. Please urgently reach me out.\n" + "GPS was turned off. Couldn't find location. Call your nearest Police Station.";
+                SmsManager smsManager = SmsManager.getDefault();
+                DbHelper db = new DbHelper(MapsActivity.this);
+                List<ContactModel> list = db.getAllContacts();
+                for (ContactModel c : list) {
+                    smsManager.sendTextMessage(c.getPhoneNo(), null, message, null, null);
+                }
+            }
+        }).addOnFailureListener(e -> {
+            Log.d("Check: ", "OnFailure");
+            String message = "I am in DANGER, I need help. Please urgently reach me out.\n" + "GPS was turned off. Couldn't find location. Call your nearest Police Station.";
+            SmsManager smsManager = SmsManager.getDefault();
+            DbHelper db = new DbHelper(MapsActivity.this);
+            List<ContactModel> list = db.getAllContacts();
+            for (ContactModel c : list) {
+                smsManager.sendTextMessage(c.getPhoneNo(), null, message, null, null);
+            }
+        });
     }
 
     private boolean isMyServiceRunning(Class<?> serviceClass) {
