@@ -13,6 +13,7 @@ import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.telephony.SmsManager;
 import android.util.Log;
 import android.widget.Button;
@@ -75,8 +76,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     Button LocationButton;
     FusedLocationProviderClient fusedLocationProviderClient;
     SupportMapFragment mapFragment;
-
-
 
 
     @Override
@@ -151,8 +150,20 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     private void AlertMe() {
+        CountDownTimer timer = new CountDownTimer(10000, 1000) {
+            public void onTick(long millisUntilFinished) {
+            }
+            public void onFinish() {
+                if(alertDialog != null && alertDialog.isShowing()){
+                    alertDialog.dismiss();
+                    CallServices();
+                }
+            }
 
-        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(MapsActivity.this);
+        };
+
+
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
         alertDialogBuilder.setTitle("We detected an unexpected collision");
         alertDialogBuilder.setCancelable(false);
         alertDialogBuilder.setMessage("Do you need medical assistance? If you don't respond within 2 minutes, I will notify everyone on your emergency contacts.");
@@ -160,11 +171,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             Toast.makeText(MapsActivity.this, "Requesting Emergency Services", Toast.LENGTH_SHORT).show();
             CallServices();
         });
-        alertDialogBuilder.setNegativeButton("CANCEL", (dialog, which) -> Toast.makeText(MapsActivity.this, "Request for Emergency Services Cancelled", Toast.LENGTH_SHORT).show());
-        alertDialogBuilder.create();
-        alertDialogBuilder.show();
-    }
+        alertDialogBuilder.setNegativeButton("CANCEL", (dialog, which) -> {
+            timer.cancel();
+            Toast.makeText(MapsActivity.this, "Request for Emergency Services Cancelled", Toast.LENGTH_SHORT).show();
+        });
 
+
+        alertDialog = alertDialogBuilder.create();
+        alertDialogBuilder.show();
+        timer.start();
+    }
 
     public void CallServices() {
         FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(getApplicationContext());
