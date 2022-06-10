@@ -5,6 +5,7 @@ import android.annotation.SuppressLint;
 import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.hardware.Sensor;
@@ -14,6 +15,7 @@ import android.location.Geocoder;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.telecom.Call;
 import android.telephony.SmsManager;
 import android.util.Log;
 import android.widget.Button;
@@ -91,7 +93,39 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             // check if the user has shook
             // the phone for 3 time in a row
             if (count == 3) {
-                AlertMe();
+                final AlertDialog AlertMe = new AlertDialog.Builder(this)
+                        .setTitle("We detected an unexpected collision.")
+                        .setCancelable(false)
+                        .setMessage("Do you need medical assistance? If you don't respond within 2 minutes, I will notify everyone on your emergency contacts.")
+                        .setPositiveButton("Yes", ((dialog, which) -> {
+                            Toast.makeText(MapsActivity.this, "Requesting emergency services...", Toast.LENGTH_SHORT).show();
+                            CallServices();
+                        }))
+                        .setNegativeButton("No", ((dialog, which) -> {
+                            timer.cancel();
+                            Toast.makeText(MapsActivity.this, "Request for emergency services cancelled.", Toast.LENGTH_SHORT).show();
+                        }))
+                        .create();
+                timer.start();
+
+                alertDialog.setOnShowListener(new DialogInterface.OnShowListener() {
+                    @Override
+                    public void onShow(DialogInterface dialogInterface) {
+                        final Button yesButton = AlertMe.getButton(AlertDialog.BUTTON_NEGATIVE);
+                        new CountDownTimer(120000, 1000){
+                            @Override
+                            public void onTick(long l){
+                                yesButton.setText("Yes ("+(l/1000));
+                            }
+                            @Override
+                            public void onFinish(){
+                                if(alertDialog.isShowing())
+                                    CallServices();
+                                AlertMe.dismiss();
+                            }
+                        };
+                    }
+                });
             }
         });
 
@@ -147,35 +181,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mapFragment.getMapAsync(this);
 
         getCurrLocation();
-    }
-
-    private void timer(){
-        timer = new CountDownTimer(TimerLeftInMillis, 1000){
-            @Override
-            public void onTick(long millisuntilfinish){
-                TimerLeftInMillis=millisuntilfinish;
-            }
-            @Override
-            public void onFinish() {
-                CallServices();
-            }
-        };
-    }
-
-    private void AlertMe() {
-        TimerLeftInMillis = Start_time_millis;
-        timer();
-        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(MapsActivity.this);
-        alertDialogBuilder.setTitle("We detected an unexpected collision");
-        alertDialogBuilder.setCancelable(false);
-        alertDialogBuilder.setMessage("Do you need medical assistance? If you don't respond within 2 minutes, I will notify everyone on your emergency contacts.");
-        alertDialogBuilder.setPositiveButton("YES", (dialog, which) -> {
-            Toast.makeText(MapsActivity.this, "Requesting Emergency Services", Toast.LENGTH_SHORT).show();
-            CallServices();
-        });
-        alertDialogBuilder.setNegativeButton("CANCEL", (dialog, which) -> Toast.makeText(MapsActivity.this, "Request for Emergency Services Cancelled", Toast.LENGTH_SHORT).show());
-        alertDialogBuilder.create();
-        alertDialogBuilder.show();
     }
 
     public void CallServices() {
