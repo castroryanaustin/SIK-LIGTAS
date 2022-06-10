@@ -41,7 +41,7 @@ public class Register extends AppCompatActivity {
         mEmail      = findViewById(R.id.reg_email);
         mPassword   = findViewById(R.id.reg_pass);
         mPhone      = findViewById(R.id.reg_phone);
-        mRegisterBtn= findViewById(R.id.reg_btn);
+        mRegisterBtn = findViewById(R.id.reg_btn);
         mLoginBtn   = findViewById(R.id.login);
 
         fAuth = FirebaseAuth.getInstance();
@@ -97,7 +97,8 @@ public class Register extends AppCompatActivity {
                     user.put("email",email);
                     user.put("phone",phone);
                     documentReference.set(user).addOnSuccessListener(aVoid -> Log.d(TAG, "onSuccess: User Profile is created for "+ userID)).addOnFailureListener(e -> Log.d(TAG, "onFailure: " + e));
-                    startActivity(new Intent(getApplicationContext(),MapsActivity.class));
+                    startActivity(new Intent(getApplicationContext(), MapsActivity.class));
+                    finish();
 
                 }else {
                     Toast.makeText(Register.this, "Error ! " + Objects.requireNonNull(task.getException()).getMessage(), Toast.LENGTH_SHORT).show();
@@ -108,7 +109,7 @@ public class Register extends AppCompatActivity {
 
 
 
-        mLoginBtn.setOnClickListener(v -> startActivity(new Intent(getApplicationContext(),Login.class)));
+        mLoginBtn.setOnClickListener(v -> startActivity(new Intent(getApplicationContext(), Login.class)));
 
     }
 }

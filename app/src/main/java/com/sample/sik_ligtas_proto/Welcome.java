@@ -33,7 +33,7 @@ public class Welcome extends AppCompatActivity {
 
         FirebaseUser user= FirebaseAuth.getInstance().getCurrentUser();
         if (user != null){
-            startActivity(new Intent(Welcome.this,MapsActivity.class));
+            startActivity(new Intent(Welcome.this, MapsActivity.class));
             Toast.makeText(this, "Welcome Back!", Toast.LENGTH_SHORT).show();
         } else {
             prompt();

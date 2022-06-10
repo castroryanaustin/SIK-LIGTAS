@@ -5,7 +5,9 @@ import android.annotation.SuppressLint;
 import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
@@ -14,20 +16,29 @@ import android.location.Geocoder;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.os.Looper;
 import android.telephony.SmsManager;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatButton;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.FragmentActivity;
 
+import com.google.android.gms.common.api.ResolvableApiException;
 import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.LocationSettingsRequest;
+import com.google.android.gms.location.LocationSettingsResponse;
+import com.google.android.gms.location.SettingsClient;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -35,11 +46,16 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.tasks.CancellationToken;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.OnTokenCanceledListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -58,14 +74,20 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, TaskLoadedCallback{
+public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, TaskLoadedCallback {
 
-    private double latitude, longitude;
+    private LatLng currentLocation;
+    private LatLng prevLocation = new LatLng(0.0, 0.0);
+    private boolean hasLocationData = false;
+    private Marker place1Mark, place2Mark;
     private GoogleMap mMap;
     private MarkerOptions place1, place2;
     private Polyline currentPolyline;
     private AlertDialog alertDialog;
 
+    FusedLocationProviderClient fusedLocationProviderClient;
+    LocationRequest locationRequest;
+    private LocationCallback locationCallback;
 
     List<MarkerOptions> markerOptionsList = new ArrayList<>();
     AppCompatButton menuBtn;
@@ -74,8 +96,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     FirebaseFirestore fStore;
     String userId;
     Button LocationButton;
-    FusedLocationProviderClient fusedLocationProviderClient;
     SupportMapFragment mapFragment;
+    CountDownTimer countDownTimer;
+    private LocationSettingsRequest request;
 
 
     @Override
@@ -115,13 +138,21 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         nav_title = findViewById(R.id.nav_title);
 
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
-        if (ActivityCompat.checkSelfPermission(MapsActivity.this,
-                Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            getLocation();
-        } else {
-            ActivityCompat.requestPermissions(MapsActivity.this,
-                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION,}, 44);
-        }
+        locationRequest = LocationRequest.create();
+        locationRequest.setInterval(4000);
+        locationRequest.setFastestInterval(2000);
+        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+
+        locationCallback = new LocationCallback() {
+            @Override
+            public void onLocationResult(LocationResult locationResult) {
+                if (locationResult == null) {
+                    hasLocationData = false;
+                    return;
+                }
+                hasLocationData = true;
+            }
+        };
 
         fAuth = FirebaseAuth.getInstance();
         fStore = FirebaseFirestore.getInstance();
@@ -139,47 +170,130 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         myDay();
 
         LocationButton = findViewById(R.id.LocationButton);
-        LocationButton.setOnClickListener(view -> new FetchURL(MapsActivity.this)
-                .execute(getUrl(place1.getPosition(), place2.getPosition()), "driving"));
+        LocationButton.setOnClickListener(view -> {
+            getCurrLocation();
+        });
 
         mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         assert mapFragment != null;
         mapFragment.getMapAsync(this);
+    }
 
-        getCurrLocation();
+    @Override
+    protected void onStart() {
+        super.onStart();
+        if (ActivityCompat.checkSelfPermission(MapsActivity.this,
+                Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            checkSettingsAndStartLocationUpdates();
+        } else {
+            ActivityCompat.requestPermissions(MapsActivity.this,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION,}, 44);
+        }
+    }
+
+    private void checkSettingsAndStartLocationUpdates() {
+        // Request for Settings Change
+        LocationSettingsRequest request = new LocationSettingsRequest.Builder().addLocationRequest(locationRequest).build();
+        SettingsClient settingClient = LocationServices.getSettingsClient(this);
+        Task<LocationSettingsResponse> locationSettingsResponseTask = settingClient.checkLocationSettings(request);
+        locationSettingsResponseTask.addOnSuccessListener(locationSettingsResponse -> {
+            startLocationUpdates(); // if settings accepted
+        });
+
+        // if resolvable request a resolution
+        locationSettingsResponseTask.addOnFailureListener(e -> {
+            if (e instanceof ResolvableApiException) {
+                ResolvableApiException apiException = (ResolvableApiException) e;
+                try {
+                    apiException.startResolutionForResult(MapsActivity.this, 1001);
+                } catch (IntentSender.SendIntentException exception) {
+                    exception.printStackTrace();
+                }
+            }
+        });
+    }
+
+    private void startLocationUpdates() {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+        fusedLocationProviderClient.requestLocationUpdates(locationRequest,
+                locationCallback,
+                Looper.getMainLooper());
+    }
+
+    private void stopLocationUpdates(){
+        fusedLocationProviderClient.removeLocationUpdates(locationCallback);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        startLocationUpdates();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        stopLocationUpdates();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        stopLocationUpdates();
     }
 
     private void AlertMe() {
-        CountDownTimer timer = new CountDownTimer(10000, 1000) {
-            public void onTick(long millisUntilFinished) {
+
+        final AlertDialog dialog = new AlertDialog.Builder(this)
+                .setCancelable(false)
+                .setTitle("We detected an unexpected collision")
+                .setMessage("Do you need medical assistance? If you don't respond within 2 minutes, I will notify everyone on your emergency contacts.")
+                .setPositiveButton("YES", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        Toast.makeText(MapsActivity.this, "Requesting Emergency Services", Toast.LENGTH_SHORT).show();
+                        CallServices();
+                    }
+                })
+                .setNegativeButton("NO", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                    }
+                }).create();
+
+        dialog.setOnShowListener(new DialogInterface.OnShowListener() {
+            @Override
+            public void onShow(DialogInterface dialogInterface) {
+                Button noButton = dialog.getButton(AlertDialog.BUTTON_NEGATIVE);
+                countDownTimer = new CountDownTimer(10000, 1000) {
+                    @Override
+                    public void onTick(long l) {
+                        noButton.setText("CANCEL (" + (l/1000) + ")");
+                        noButton.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                countDownTimer.cancel();
+                                dialog.dismiss();
+                                Toast.makeText(MapsActivity.this, "Request for Emergency Services Cancelled", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onFinish() {
+                        if(dialog.isShowing())
+                            dialog.dismiss();
+                            Toast.makeText(MapsActivity.this, "Requesting Emergency Services", Toast.LENGTH_SHORT).show();
+                            CallServices();
+                    }
+
+                }.start();
             }
-            public void onFinish() {
-                if(alertDialog != null && alertDialog.isShowing()){
-                    alertDialog.dismiss();
-                    CallServices();
-                }
-            }
-
-        };
-
-
-        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
-        alertDialogBuilder.setTitle("We detected an unexpected collision");
-        alertDialogBuilder.setCancelable(false);
-        alertDialogBuilder.setMessage("Do you need medical assistance? If you don't respond within 2 minutes, I will notify everyone on your emergency contacts.");
-        alertDialogBuilder.setPositiveButton("YES", (dialog, which) -> {
-            Toast.makeText(MapsActivity.this, "Requesting Emergency Services", Toast.LENGTH_SHORT).show();
-            CallServices();
         });
-        alertDialogBuilder.setNegativeButton("CANCEL", (dialog, which) -> {
-            timer.cancel();
-            Toast.makeText(MapsActivity.this, "Request for Emergency Services Cancelled", Toast.LENGTH_SHORT).show();
-        });
+        dialog.show();
 
-
-        alertDialog = alertDialogBuilder.create();
-        alertDialogBuilder.show();
-        timer.start();
     }
 
     public void CallServices() {
@@ -247,14 +361,21 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     private void setMarkers(){
-        place1 = new MarkerOptions().position(new LatLng(latitude, longitude)).title("You are Here");
-        place2 = new MarkerOptions().position(new LatLng(14.9447777, 120.8899436)).title("Need Urgent Assistance");
+        if(prevLocation.latitude == 0.0 && prevLocation.longitude == 0.0){
+            prevLocation = new LatLng(currentLocation.latitude, currentLocation.longitude);
+            place1 = new MarkerOptions().position(currentLocation).title("You are Here");
+            place2 = new MarkerOptions().position(new LatLng(14.9447777, 120.8899436)).title("Need Urgent Assistance");
+            markerOptionsList.add(place1);
+            markerOptionsList.add(place2);
 
-        markerOptionsList.add(place1);
-        markerOptionsList.add(place2);
-
-        mMap.addMarker(place1);
-        mMap.addMarker(place2);
+            place1Mark = mMap.addMarker(place1);
+            place2Mark = mMap.addMarker(place2);
+        }else if(prevLocation.latitude != currentLocation.latitude || prevLocation.longitude != currentLocation.longitude){
+            prevLocation = new LatLng(currentLocation.latitude, currentLocation.longitude);
+            place1Mark.setPosition(currentLocation);
+        }
+        new FetchURL(MapsActivity.this)
+                .execute(getUrl(place1.getPosition(), place2.getPosition()), "driving");
         showAllMarkers();
     }
 
@@ -272,6 +393,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, width, height, padding);
         mMap.animateCamera(cu);
 
+        try {
+            Geocoder geocoder = new Geocoder(MapsActivity.this, Locale.getDefault());
+            List<Address> addresses = geocoder.getFromLocation(
+                    currentLocation.latitude, currentLocation.longitude, 1
+            );
+            curr_location.setText(addresses.get(0).getLocality());
+        } catch (Exception ignored){
+        }
     }
 
     private String getUrl(LatLng origin, LatLng destination) {
@@ -285,52 +414,54 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     }
 
-
-
     private void getCurrLocation() {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
         }
-        fusedLocationProviderClient.getLastLocation().addOnSuccessListener(e -> {
 
-            longitude = e.getLongitude();
-            latitude = e.getLatitude();
-
-            System.out.println(latitude + "--------++++----------" + longitude);
-            setMarkers(); // call back
-        });
+        fusedLocationProviderClient.getLastLocation()
+                .addOnSuccessListener(this, new OnSuccessListener<Location>() {
+                    @Override
+                    public void onSuccess(Location location) {
+                        if (location != null) {
+                            currentLocation = new LatLng(location.getLatitude(), location.getLongitude());
+                            setMarkers(); // call back
+                        }
+                    }
+                });
     }
 
-    private void getLocation() {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            return;
-        }
-        fusedLocationProviderClient.getLastLocation().addOnCompleteListener(task -> {
-            Location location = task.getResult();
-            if (location != null) {
-                try {
-
-                    mapFragment.getMapAsync(googleMap -> {
-                        LatLng latLng = new LatLng(location.getLatitude(),location.getLongitude());
-                        MarkerOptions markerOptions = new MarkerOptions().position(latLng).title("You are Here");
-
-                        googleMap.addMarker(markerOptions);
-                        googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 17));
-
-                    });
-
-                    Geocoder geocoder = new Geocoder(MapsActivity.this, Locale.getDefault());
-                    List<Address> addresses = geocoder.getFromLocation(
-                            location.getLatitude(), location.getLongitude(), 1
-                    );
-                    curr_location.setText(addresses.get(0).getLocality());
-
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-    }
+//    @Deprecated
+//    private void getLocation() {
+//        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+//            return;
+//        }
+//        fusedLocationProviderClient.getLastLocation().addOnCompleteListener(task -> {
+//            Location location = task.getResult();
+//            if (location != null) {
+//                try {
+//
+//                    mapFragment.getMapAsync(googleMap -> {
+//                        LatLng latLng = new LatLng(location.getLatitude(),location.getLongitude());
+//                        MarkerOptions markerOptions = new MarkerOptions().position(latLng).title("You are Here");
+//
+//                        googleMap.addMarker(markerOptions);
+//                        googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 17));
+//
+//                    });
+//
+//                    Geocoder geocoder = new Geocoder(MapsActivity.this, Locale.getDefault());
+//                    List<Address> addresses = geocoder.getFromLocation(
+//                            location.getLatitude(), location.getLongitude(), 1
+//                    );
+//                    curr_location.setText(addresses.get(0).getLocality());
+//
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//        });
+//    }
 
     @SuppressLint("SetTextI18n")
     public void myDay(){
