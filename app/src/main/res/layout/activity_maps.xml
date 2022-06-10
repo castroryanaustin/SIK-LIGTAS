@@ -109,11 +109,11 @@
                 android:layout_marginTop="10dp"
                 android:layout_marginBottom="10dp"
                 android:background="@drawable/round_btn"
-                android:drawableStart="@drawable/ic_baseline_location_on_48"
+                android:drawableStart="@drawable/ic_baseline_my_location_48"
                 android:drawablePadding="10dp"
                 android:fontFamily="@font/montserrat"
                 android:padding="30dp"
-                android:text="TRACK"
+                android:text="@string/locate"
                 android:textColor="#353839"
                 android:textSize="48sp"
                 android:textStyle="bold" />

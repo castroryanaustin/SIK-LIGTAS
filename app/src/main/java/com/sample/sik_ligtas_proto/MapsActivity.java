@@ -88,6 +88,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     FusedLocationProviderClient fusedLocationProviderClient;
     LocationRequest locationRequest;
     private LocationCallback locationCallback;
+    private boolean hasCollisionNearBy = false; // TODO MAKE FALSE
 
     List<MarkerOptions> markerOptionsList = new ArrayList<>();
     AppCompatButton menuBtn;
@@ -168,15 +169,58 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         menuBtn.setOnClickListener(v -> go_to_menu());
 
         myDay();
-
         LocationButton = findViewById(R.id.LocationButton);
         LocationButton.setOnClickListener(view -> {
-            getCurrLocation();
+            if(hasLocationData){
+                if(!hasCollisionNearBy){
+                  zoomToMarkers(20, place1);
+                } else {
+                    zoomToMarkers(-1, place1, place2);
+                }
+            } else {
+                Toast.makeText(this, "Syncing...", Toast.LENGTH_SHORT).show();
+            }
         });
 
         mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         assert mapFragment != null;
         mapFragment.getMapAsync(this);
+
+        Bundle extras = getIntent().getExtras();
+        if(extras != null){
+            if(extras.getString("FROM_ACTIVITY").equals("SIMUL_COLLISION")){
+                hasCollisionNearBy = true;
+                // dialog
+                AlertDialog.Builder simulDialog = new AlertDialog.Builder(this);
+                simulDialog.setTitle("Nearby Collision Detected");
+                simulDialog.setMessage("A nearby collision has been detected. Press 'SHOW' to locate");
+                simulDialog.setPositiveButton("SHOW", (dialog, which) -> {
+                    // algo show marker poly
+                    // (1) Set Marker
+                    // (2) Set Polyline
+                    trackIncidentInMap();
+                    zoomToMarkers(-1, place1, place2);
+                    dialog.cancel();
+                });
+                simulDialog.setNegativeButton("DISMISS", (dialog, which) -> {
+                    hasCollisionNearBy = false;
+                    dialog.cancel();
+                });
+                simulDialog.setCancelable(false);
+                simulDialog.show();
+            }
+        }
+    }
+
+    private void trackIncidentInMap() {
+        LatLng incidentLoc = new LatLng(14.9447777, 120.8899436);
+        if(place2Mark != null){
+            place2Mark.setPosition(incidentLoc);
+        } else {
+            place2 = new MarkerOptions().position(incidentLoc).title("Need Urgent Assistance");
+            place2Mark = mMap.addMarker(place2);
+        }
+        includePolyLine();
     }
 
     @Override
@@ -358,40 +402,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onMapReady(@NonNull GoogleMap googleMap) {
         mMap = googleMap;
+        getCurrLocation();
     }
 
-    private void setMarkers(){
+    private void showLastLocationMarker(){
         if(prevLocation.latitude == 0.0 && prevLocation.longitude == 0.0){
             prevLocation = new LatLng(currentLocation.latitude, currentLocation.longitude);
             place1 = new MarkerOptions().position(currentLocation).title("You are Here");
-            place2 = new MarkerOptions().position(new LatLng(14.9447777, 120.8899436)).title("Need Urgent Assistance");
             markerOptionsList.add(place1);
-            markerOptionsList.add(place2);
-
             place1Mark = mMap.addMarker(place1);
-            place2Mark = mMap.addMarker(place2);
         }else if(prevLocation.latitude != currentLocation.latitude || prevLocation.longitude != currentLocation.longitude){
             prevLocation = new LatLng(currentLocation.latitude, currentLocation.longitude);
             place1Mark.setPosition(currentLocation);
         }
-        new FetchURL(MapsActivity.this)
-                .execute(getUrl(place1.getPosition(), place2.getPosition()), "driving");
-        showAllMarkers();
-    }
-
-    private void showAllMarkers() {
-        LatLngBounds.Builder builder = new LatLngBounds.Builder();
-        for (MarkerOptions m : markerOptionsList) {
-            builder.include(m.getPosition());
-        }
-        LatLngBounds bounds = builder.build();
-
-        int width = getResources().getDisplayMetrics().widthPixels;
-        int height = getResources().getDisplayMetrics().heightPixels;
-        int padding = (int) (width * 0.30);
-
-        CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, width, height, padding);
-        mMap.animateCamera(cu);
 
         try {
             Geocoder geocoder = new Geocoder(MapsActivity.this, Locale.getDefault());
@@ -400,6 +423,59 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             );
             curr_location.setText(addresses.get(0).getLocality());
         } catch (Exception ignored){
+        }
+
+        zoomToMarkers(20, place1);
+    }
+
+    private void setMarkers(){
+        if(prevLocation.latitude == 0.0 && prevLocation.longitude == 0.0){
+            prevLocation = new LatLng(currentLocation.latitude, currentLocation.longitude);
+            place1 = new MarkerOptions().position(currentLocation).title("You are Here");
+            place2 = new MarkerOptions().position(new LatLng(14.9447777, 120.8899436)).title("Need Urgent Assistance");
+            place2Mark = mMap.addMarker(place2);
+
+            markerOptionsList.add(place1);
+            markerOptionsList.add(place2);
+
+            place1Mark = mMap.addMarker(place1);
+        }else if(prevLocation.latitude != currentLocation.latitude || prevLocation.longitude != currentLocation.longitude){
+            prevLocation = new LatLng(currentLocation.latitude, currentLocation.longitude);
+            place1Mark.setPosition(currentLocation);
+        }
+        //includePolyLine();
+    }
+
+    private void includePolyLine(){
+        new FetchURL(MapsActivity.this)
+                .execute(getUrl(place1.getPosition(), place2.getPosition()), "driving");
+    }
+
+    private void zoomToMarkers(int zoomLevel, MarkerOptions... markerOptions){
+        LatLngBounds.Builder builder = new LatLngBounds.Builder();
+        for (MarkerOptions m : markerOptions) {
+            builder.include(m.getPosition());
+        }
+
+        /**
+         * 1: World
+         * 5: Landmass/continent
+         * 10: City
+         * 15: Streets
+         * 20: Buildings
+         */
+
+        LatLngBounds bounds = builder.build();
+
+        int width = getResources().getDisplayMetrics().widthPixels;
+        int height = getResources().getDisplayMetrics().heightPixels;
+        int padding = (int) (width * 0.30);
+
+        if(zoomLevel == -1){
+            CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, width, height, padding);
+            mMap.animateCamera(cu);
+        } else {
+            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, zoomLevel));
         }
     }
 
@@ -425,7 +501,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     public void onSuccess(Location location) {
                         if (location != null) {
                             currentLocation = new LatLng(location.getLatitude(), location.getLongitude());
-                            setMarkers(); // call back
+                            showLastLocationMarker(); // call back
                         }
                     }
                 });

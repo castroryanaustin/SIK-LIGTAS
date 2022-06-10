@@ -3,6 +3,7 @@ package com.sample.sik_ligtas_proto;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
@@ -16,7 +17,7 @@ import java.util.Objects;
 
 public class NavMenu extends AppCompatActivity {
 
-    TextView fullName, email, phone, back, addContacts, firstAidGuide, credits, help;
+    TextView fullName, email, phone, back, addContacts, firstAidGuide, credits, help, simulate;
     FirebaseAuth fAuth;
     FirebaseFirestore fStore;
     String userId;
@@ -41,6 +42,7 @@ public class NavMenu extends AppCompatActivity {
         fStore = FirebaseFirestore.getInstance();
         userId = Objects.requireNonNull(fAuth.getCurrentUser()).getUid();
         help = findViewById(R.id.help);
+        simulate = findViewById(R.id.log_simulate);
 
         DocumentReference documentReference = fStore.collection("users").document(userId);
         documentReference.addSnapshotListener(this, (value, error) -> {
@@ -65,7 +67,12 @@ public class NavMenu extends AppCompatActivity {
 
         help.setOnClickListener(v -> startActivity(new Intent(NavMenu.this, AppHelp.class)));
 
-
+        simulate.setOnClickListener(v -> {
+            String FROM_ACTIVITY = "SIMUL_COLLISION";
+            Intent mapsIntent = new Intent(NavMenu.this, MapsActivity.class);
+            mapsIntent.putExtra("FROM_ACTIVITY", FROM_ACTIVITY);
+            startActivity(mapsIntent);
+        });
     }
 
     private void openAid() {
